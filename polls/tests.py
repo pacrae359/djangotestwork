@@ -2,6 +2,7 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 from .models import Question, Choice
 
@@ -55,7 +56,8 @@ class QuestionIndexViewTests(TestCase):
 		Question with a pub_date in the future aren't displayed on
 		the index page.
 		"""
-		create_question(question_text="Future question.", days=30)
+		question1 = create_question(question_text="Future question.", days=30)
+		create_choice("Choice.", question1.id)
 		response = self.client.get(reverse("polls:index"))
 		self.assertContains(response, "No polls are available")
 		self.assertQuerySetEqual(
@@ -68,8 +70,9 @@ class QuestionIndexViewTests(TestCase):
 		are displayed.
 		"""
 		question = create_question(question_text="Past question.", days=-30)
-		create_question(question_text="Future question.", days=30)
+		question2 = create_question(question_text="Future question.", days=30)
 		create_choice("Choice.", question.id)
+		create_choice("Choice.", question2.id)
 		response = self.client.get(reverse("polls:index"))
 		self.assertQuerySetEqual(
 			response.context["latest_question_list"],
@@ -116,6 +119,24 @@ class QuestionIndexViewTests(TestCase):
 			[question_with_choice],
 		)
 
+	def test_admin_shown_past_and_future_questions(self):
+		"""
+		If the user is a logged in admin, then both future and past questions should be displayed to them.
+		"""
+		admin_password = "test_password"
+		my_admin = User.objects.create_superuser('testuser', 'myemail@test.com', admin_password)
+		self.client.login(username=my_admin.username, password=admin_password)
+		question1 = create_question(question_text="Past Question", days=-30)
+		question2 = create_question(question_text="Future Question", days=30)
+		create_choice("Choice.", question1.id)
+		create_choice("Choice.", question2.id)
+		response = self.client.get(reverse("polls:index"))
+		self.assertQuerySetEqual(
+			response.context["latest_question_list"],
+			[question2,question1],
+		)
+
+
 class QuestionDetailViewTests(TestCase):
 	def test_past_question(self):
 		past_question = create_question(question_text="Past Question.", days=-5)
@@ -126,21 +147,32 @@ class QuestionDetailViewTests(TestCase):
 
 	def test_future_question(self):
 		future_question = create_question(question_text="Future Question.", days=5)
+		create_choice("Choice.", future_question.id)
 		url = reverse("polls:detail", args=(future_question.id,))
 		response = self.client.get(url)
 		self.assertEqual(response.status_code, 404)
 
 	def test_question_with_no_choices(self):
 		"""
-		The questions index page will not show questions that do not have any choices. Only testing past questions as future questions should never be shown
+		The questions detail page will not show questions that do not have any choices. Only testing past questions as future questions should never be shown
 		due to earlier testing.
 		"""
 		question = create_question(question_text="Question without choices", days=-30)
 		response = self.client.get(reverse("polls:detail", args=(question.id,)))
-		self.assertContains(response, "No polls are available")
-		self.assertQuerySetEqual(response.context["latest_question_list"],
-			[],
-		)
+		self.assertEquals(response.status_code, 404)
+
+	def test_admin_future_question(self):
+		"""
+		An admin should be able to access the details pages of questions.
+		"""
+		admin_password = "test_password"
+		my_admin = User.objects.create_superuser('testuser', 'myemail@test.com', admin_password)
+		self.client.login(username=my_admin.username, password=admin_password)
+		question = create_question(question_text="Future Question", days=30)
+		create_choice("Choice.", question.id)
+		response = self.client.get(reverse("polls:detail", args=(question.id,)))
+		self.assertContains(response, question.question_text)
+
 
 class QuestionResultsViewTests(TestCase):
 	def test_past_question(self):
@@ -152,6 +184,7 @@ class QuestionResultsViewTests(TestCase):
 
 	def test_future_question(self):
 		future_question = create_question(question_text="Future Question.", days=5)
+		create_choice("Choice.", future_question.id)
 		url = reverse("polls:results", args=(future_question.id,))
 		response = self.client.get(url)
 		self.assertEqual(response.status_code, 404)
@@ -164,4 +197,15 @@ class QuestionResultsViewTests(TestCase):
 		question = create_question(question_text="Question without choices", days=-30)
 		response = self.client.get(reverse("polls:results", args=(question.id,)))
 		self.assertEquals(response.status_code, 404)
-		
+
+	def test_admin_future_question(self):
+		"""
+		An admin should be able to access the results pages of future questions.
+		"""
+		admin_password = "test_password"
+		my_admin = User.objects.create_superuser('testuser', 'myemail@test.com', admin_password)
+		self.client.login(username=my_admin.username, password=admin_password)
+		question = create_question(question_text="Future Question", days=30)
+		create_choice("Choice.", question.id)
+		response = self.client.get(reverse("polls:results", args=(question.id,)))
+		self.assertContains(response, question.question_text)

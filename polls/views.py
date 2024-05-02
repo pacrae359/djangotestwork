@@ -11,14 +11,22 @@ from .models import Question, Choice
 from django.views import generic
 
 from django.utils import timezone
+
+from django.contrib.auth.models import User
+
+import logging
+
+logger = logging.getLogger(__name__)
  
 class IndexView(generic.ListView):
 	template_name = "polls/index.html"
 	context_object_name = "latest_question_list"
-
 	def get_queryset(self):
-		return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True).order_by("-pub_date")[:5]
-
+		if self.request.user.is_superuser:
+			return Question.objects.exclude(choice__question_id__isnull = True).order_by("-pub_date")[:5]
+		else:
+			return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True).order_by("-pub_date")[:5]
+		
 class DetailView(generic.DetailView):
 	model = Question
 	template_name = "polls/detail.html"
@@ -27,7 +35,10 @@ class DetailView(generic.DetailView):
 		"""
 		Excludes any questions with publish dates in the future.
 		"""
-		return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True)
+		if self.request.user.is_superuser:
+			return Question.objects.exclude(choice__question_id__isnull = True)
+		else:
+			return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True)
 
 class ResultsView(generic.DetailView):
 	model = Question
@@ -37,7 +48,10 @@ class ResultsView(generic.DetailView):
 		"""
 		Exclude any questions with publish dates in the future, or ones that don't have any choices
 		"""
-		return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True)
+		if self.request.user.is_superuser:
+			return Question.objects.exclude(choice__question_id__isnull = True)
+		else:
+			return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True)
 
 def vote(request, question_id):
 	question = get_object_or_404(Question, pk=question_id)
