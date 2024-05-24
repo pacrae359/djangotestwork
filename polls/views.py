@@ -1,18 +1,26 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 
 from django.db.models import F
 
 from django.http import HttpResponseRedirect
 
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 
 from .models import Question, Choice
+
+from .forms import CreateUserForm
 
 from django.views import generic
 
 from django.utils import timezone
 
 from django.contrib.auth.models import User
+
+from django.contrib.auth.forms import UserCreationForm
+
+from django.contrib.auth import authenticate, login, logout
+
+from django.contrib import messages
 
 import logging
 
@@ -52,6 +60,36 @@ class ResultsView(generic.DetailView):
 			return Question.objects.exclude(choice__question_id__isnull = True)
 		else:
 			return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True)
+
+def loginPage(request):
+	if request.method == 'POST':
+		username = request.POST.get('username')
+		password = request.POST.get('password')
+
+		user = authenticate(request, username=username, password=password)
+
+		if user is not None:
+			login(request, user)
+			return redirect('polls:index')
+		else:
+			messages.info(request, 'This Username and Password combination is not recognised. Please Try Again!')
+
+	context = {}
+	return render(request, 'polls/login.html', context)
+
+def registerPage(request):
+	form = CreateUserForm()
+
+	if request.method == "POST":
+		form = CreateUserForm(request.POST)
+		if form.is_valid():
+			form.save()
+			user = form.cleaned_data.get('username')
+			messages.success(request, "Account created for " + user)
+			return redirect('polls:login')
+
+	context = {"form": form}
+	return render(request, 'polls/register.html', context)
 
 def vote(request, question_id):
 	question = get_object_or_404(Question, pk=question_id)

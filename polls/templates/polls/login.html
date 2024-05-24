@@ -1,0 +1,17 @@
+<h3> Login </h3>
+<form method="POST" action="">
+	{% csrf_token %}
+	<label for="username"> Username: </label>
+	<input type="text" id="username" name="username">
+	<br><br>
+	<label for="password"> Password: </label>
+	<input type="password" id="password" name="password">
+
+	<input type="submit" value="Login">
+</form>
+
+{% for message in messages %}
+	<p id="messages"> {{ message }} </p>
+{% endfor %}
+
+Not a user with us? <a href="{% url 'polls:register' %}"> Sign Up </a>
