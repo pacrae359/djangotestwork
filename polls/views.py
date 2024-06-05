@@ -62,20 +62,22 @@ class ResultsView(generic.DetailView):
 			return Question.objects.filter(pub_date__lte=timezone.now()).exclude(choice__question_id__isnull = True)
 
 def loginPage(request):
-	if request.method == 'POST':
-		username = request.POST.get('username')
-		password = request.POST.get('password')
+	if not request.user.is_authenticated:
+		if request.method == 'POST':
+			username = request.POST.get('username')
+			password = request.POST.get('password')
 
-		user = authenticate(request, username=username, password=password)
+			user = authenticate(request, username=username, password=password)
+			if user is not None:
+				login(request, user)
+				return redirect('polls:index')
+			else:
+				messages.info(request, 'This Username and Password combination is not recognised. Please Try Again!')
 
-		if user is not None:
-			login(request, user)
-			return redirect('polls:index')
-		else:
-			messages.info(request, 'This Username and Password combination is not recognised. Please Try Again!')
-
-	context = {}
-	return render(request, 'polls/login.html', context)
+		context = {}
+		return render(request, 'polls/login.html', context)
+	else:
+		return redirect('polls:index')
 
 def registerPage(request):
 	form = CreateUserForm()

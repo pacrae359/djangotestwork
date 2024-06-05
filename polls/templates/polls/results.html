@@ -1,3 +1,13 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+
+<div class="topbar">
+    <a href="{% url 'polls:index' %}"> Home </a>
+    <a id="loginout" href="{% url 'polls:login' %}"> Login </a>
+</div>
+
+<div class="center">
 <h1>{{ question.question_text }}</h1>
 <ul>
 {% for choice in question.choice_set.all %}
@@ -6,3 +16,4 @@
 </ul>
 
 <a href="{% url 'polls:detail' question.id %}">Vote again?</a>
+</div>

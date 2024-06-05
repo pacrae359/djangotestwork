@@ -1,17 +1,33 @@
-<h3> Login </h3>
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+
+<div class="topbar">
+    <a href="{% url 'polls:index' %}"> Home </a>
+    <a class="active" id="loginout" href="{% url 'polls:login' %}"> Login </a>
+</div>
+
+<div class="logforms">
+<h1 class="logtitle"> Login </h1>
 <form method="POST" action="">
 	{% csrf_token %}
+	<div class="logfield">
 	<label for="username"> Username: </label>
-	<input type="text" id="username" name="username">
 	<br><br>
+	<input type="text" id="username" name="username">
+	</div>
+	<br><br>
+	<div class="logfield">
 	<label for="password"> Password: </label>
+	<br><br>
 	<input type="password" id="password" name="password">
-
-	<input type="submit" value="Login">
+	</div>
+	<input class="logbutton" type="submit" value="Login">
 </form>
 
 {% for message in messages %}
-	<p id="messages"> {{ message }} </p>
+	<p id="messages" class="messages"> {{ message }} </p>
 {% endfor %}
 
-Not a user with us? <a href="{% url 'polls:register' %}"> Sign Up </a>
+<p class="logfooter">Not a user with us? <a class="signup" href="{% url 'polls:register' %}"> Sign Up </a> </p>
+</div>

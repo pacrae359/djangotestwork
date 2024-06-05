@@ -3,7 +3,9 @@ from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
 
+from .views import loginPage
 from .models import Question, Choice
 
 # Create your tests here.
@@ -209,3 +211,45 @@ class QuestionResultsViewTests(TestCase):
 		create_choice("Choice.", question.id)
 		response = self.client.get(reverse("polls:results", args=(question.id,)))
 		self.assertContains(response, question.question_text)
+
+class LoginViewTests(TestCase):
+	def test_login_form(self):
+		"""
+		This tests if the form properly allows logging in for an existing user.
+		"""	
+		user_data = {'username': 'test', 'password': 'testpass'}
+		User.objects.create_user(username='test',password='testpass')
+		response = self.client.post(reverse("polls:login"), user_data, follow=True)
+		self.assertTrue(response.context["user"].is_active)
+
+	def test_incorrect_credentials(self):
+		"""
+		This test checks if the user is given the correct error message and NOT logged in when giving incorrect/non-existent credentials.
+		"""
+		user_data = {'username': 'test', 'password': 'testpass'}
+		response = self.client.post(reverse("polls:login"), user_data, follow=True)
+		self.assertContains(response, "This Username and Password combination is not recognised.")
+		
+	def test_logged_in_access(self):
+		"""
+		This test ensures logged in users cannot access the login page by sniping the URL.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		response = self.client.get(reverse("polls:login"))
+		self.assertTemplateNotUsed(response, 'polls:login')
+
+class RegisterViewTests(TestCase):
+	def test_register_form(self):
+		"""
+		This tests if the register form functions correctly when given valid data
+		"""
+		username = 'user'
+		password = 'testingpassword123'
+		user_data = {'username': 'user', 'email': 'email@email.com','password1':'testingpassword123', 'password2': 'testingpassword123'}
+		response = self.client.post(reverse("polls:register"), user_data, follow=True)
+		user_data = {"username": username, "password": password}
+		response = self.client.post(reverse("polls:login"), user_data, follow=True)
+		self.assertTrue(response.context["user"].is_active)

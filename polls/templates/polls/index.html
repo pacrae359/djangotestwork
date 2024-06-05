@@ -2,12 +2,24 @@
 
 <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 
+<div class="topbar">
+    <a class="active" href="{% url 'polls:index' %}"> Home </a>
+    <a id="loginout" href="{% url 'polls:login' %}"> Login </a>
+</div>
+
+<div class="center">
+    <h1 class="pollstitle"> Polls - Home </h1> 
 {% if latest_question_list %}
-    <ul>
-    {% for question in latest_question_list %}
-        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
-    {% endfor %}
-    </ul>
+    <div class="questionswrapper">
+        <ul class="indexlist">
+        {% for question in latest_question_list %}
+            <div class="questiondiv">
+                <li class="questionline"><a class="questionlink" href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a></li>
+            </div>
+        {% endfor %}
+        </ul>
+    </div>
 {% else %}
     <p>No polls are available.</p>
 {% endif %}
+</div>

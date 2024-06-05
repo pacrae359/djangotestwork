@@ -1,21 +1,43 @@
-<h3> Register </h3> <a href="{% url 'polls:index' %}"> Home </a>
+{% load static %}
 
+<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+
+<div class="topbar">
+    <a href="{% url 'polls:index' %}"> Home </a>
+    <a id="loginout" href="{% url 'polls:login' %}"> Login </a>
+</div>
+
+<div class="logforms">
+<h1 class="logtitle"> Register </h1> 
 <form method="POST" action="">
 	{% csrf_token %}
+	<div class="logfield">
 	{{form.username.label}}:
+	<br>
 	{{form.username}}
+	</div>
 	<br>
+	<div class="logfield">
 	{{form.email.label}}:
+	<br>
 	{{form.email}}
+	</div>
 	<br>
+	<div class="logfield">
 	{{form.password1.label}}:
-	{{form.password1}}
 	<br>
+	{{form.password1}}
+	</div>
+	<br>
+	<div class="logfield">
 	{{form.password2.label}}:
+	<br>
 	{{form.password2}}
-	<input type="submit" value="Create User">
+	</div>
+	<input class="logbutton" type="submit" value="Create User">
 </form>
 
 {{form.errors}}
 
-Already a user with us? <a href="{% url 'polls:login' %}"> Login </a>
+<p class="logfooter">Already a user with us? <a class="signup" href="{% url 'polls:login' %}"> Login </a></p>
+</div>

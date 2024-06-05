@@ -1,11 +1,216 @@
-li a {
-	
-	color: green;
+body {
+
+	font-family:Arial, sans-serif;
+	background-color: lightgrey;
 
 }
 
-body {
+.pollstitle{
 
-	background: white url("images/background.png") no-repeat;
+	color: dodgerblue;
+	font-size: 60px;
+	text-align: center;
+
+}
+
+.topbar{
+	
+	background-color: dodgerblue;
+	overflow: hidden;
+	border-color: black;
+	border-style: solid;
+	border-width: 2px;
+
+}
+
+.topbar a {
+
+	float: left;
+	color: white;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+	font-size: 17px;
+	border-color: lightskyblue;
+	border-style: solid;
+	border-width: 2px;
+
+}
+
+.topbar a:hover {
+
+	background-color: #f7f7f7;
+	color: black;
+
+}
+
+.topbar a.active {
+
+  	background-color: #f7f7f7;
+  	color: black;
+
+}
+
+#loginout{
+
+	float: right !important;
+
+}
+
+#loginout:hover{
+
+	background-color: #f7f7f7;
+	color:black;
+
+}
+
+.center {
+
+	margin: 0 auto;
+	margin-top: 1%;
+	width: 80%;
+	border-radius: 10px !important;
+	border-color: dodgerblue;
+	border-style: solid;
+	padding: 1%;
+	background:#f7f7f7;
+	height: 95%;
+	overflow: auto;
+
+}
+
+/* removes bullet points from list elements */
+.indexlist{
+
+	list-style-type: none;
+
+}
+/* creates flex box for the list of questions being displayed */
+.questionswrapper{
+
+	display:flex;
+	flex-direction: column;
+
+}
+
+.questiondiv{
+
+	padding: 20px;
+	border-radius: 6px !important;
+	border-color: #03c2fc !important;
+	border-style: solid;
+	width: 60%;
+	font-size: 20px;
+	margin-right: 20;
+	margin-left: auto;
+	margin-top: 10px;
+	min-height: 50px;
+	max-height: 125px;
+	overflow: auto !important;
+	align-content: center;
+
+}
+
+.questionline{
+
+	text-align: center !important;
+	vertical-align: middle;
+	font-size: clamp(25px, 50%, 40px);
+	word-wrap: break-word;
+
+}
+
+.questionlink{
+
+	font-weight: bold;
+	text-decoration: none !important;
+	color:black;
+
+}
+
+.questionlink:hover{
+
+	text-decoration: underline !important;
+
+}
+
+.questionlink:visited{
+
+	color:purple;
+
+}
+
+.signup{
+
+	font-weight: bold;
+	text-decoration: none !important;
+
+}
+
+.logforms{
+
+	margin: auto;
+	width: 40%;
+	border-radius: 15px !important;
+	border-color: dodgerblue !important;
+	border-style: solid;
+	padding: 10px;
+	margin-top: 5%;
+	background:#f7f7f7;
+
+}
+
+.logfield{
+
+	text-align: center;
+	padding:10px;
+
+}
+
+.logbutton{
+
+	display:block;
+	margin:0 auto;
+	margin-top: 20px;
+	margin-bottom: 20px;
+	padding:10px;
+	font-size:20px;
+	color: #f7f7f7;
+	background-color: #03c2fc;
+	justify-content: center;
+	border-radius: 8px;
+	border-color: #66d8fa;
+
+}
+
+.logbutton:hover{
+
+	background-color: #66d8fa;
+	border-color: #03c2fc;
+
+}
+
+.logtitle{
+
+	text-align: center;
+	font-weight: bold;
+	color:dodgerblue;
+	padding-bottom: 50px;
+
+}
+
+.logfooter{
+
+	text-align: center;
+	padding-bottom: 50px;
+
+}
+
+.messages{
+
+	padding-left: 4px;
+	border-left: 4px solid !important;
+	border-color: #2196F3 !important;
+	background-color: #ADD8E6 !important;
 
 }
