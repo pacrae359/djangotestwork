@@ -8,7 +8,7 @@ from django.urls import reverse, reverse_lazy
 
 from .models import Question, Choice
 
-from .forms import CreateUserForm
+from .forms import CreateUserForm, CreatePollForm
 
 from django.views import generic
 
@@ -24,7 +24,7 @@ from django.contrib import messages
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) 
  
 class IndexView(generic.ListView):
 	template_name = "polls/index.html"
@@ -79,19 +79,54 @@ def loginPage(request):
 	else:
 		return redirect('polls:index')
 
+def logout(request):
+	if request.user.is_authenticated:
+		logout(request)
+		return redirect('polls:index')
+
+
 def registerPage(request):
-	form = CreateUserForm()
+	if not request.user.is_authenticated:
+		form = CreateUserForm()
 
-	if request.method == "POST":
-		form = CreateUserForm(request.POST)
-		if form.is_valid():
-			form.save()
-			user = form.cleaned_data.get('username')
-			messages.success(request, "Account created for " + user)
-			return redirect('polls:login')
+		if request.method == "POST":
+			form = CreateUserForm(request.POST)
+			if form.is_valid():
+				form.save()
+				user = form.cleaned_data.get('username')
+				messages.success(request, "Account created for " + user)
+				return redirect('polls:login')
 
-	context = {"form": form}
-	return render(request, 'polls/register.html', context)
+		context = {"form": form}
+		return render(request, 'polls/register.html', context)
+	else:
+		return redirect('polls:index')
+
+def createPollPage(request):
+	if request.user.is_authenticated:
+		form = CreatePollForm()
+
+		if request.method == "POST":
+			form = CreatePollForm(request.POST)
+			if form.is_valid():
+				poll_name = form.cleaned_data.get('poll_name')
+				poll_pub_date = form.cleaned_data.get('poll_pub_date')
+				poll_answer1 = form.cleaned_data.get('poll_answer1')
+				poll_answer2 = form.cleaned_data.get('poll_answer2')
+				poll_answer3 = form.cleaned_data.get('poll_answer3')
+				poll_question = Question.objects.create(question_text=poll_name, pub_date=poll_pub_date)
+
+				Choice.objects.create(choice_text=poll_answer1, question_id=poll_question.id)
+				Choice.objects.create(choice_text=poll_answer2, question_id=poll_question.id)
+				if poll_answer3 != "":
+					Choice.objects.create(choice_text=poll_answer3, question_id=poll_question.id)
+				return redirect('polls:index')
+
+		context = {'form': form}
+		return render(request, 'polls/create_poll.html', context)
+	else:
+		return redirect('polls:index')
+
 
 def vote(request, question_id):
 	question = get_object_or_404(Question, pk=question_id)

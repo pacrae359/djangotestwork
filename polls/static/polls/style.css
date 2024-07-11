@@ -13,6 +13,38 @@ body {
 
 }
 
+.pollfield{
+
+	align-content: center;
+	text-align: center;
+	padding:10px;
+
+}
+
+.polls_answerfield{
+
+	font-size: 20px;
+	text-align: center;
+	padding: 10px;
+	max-height: 10%;
+	max-width: 45%;
+	min-height: 5%;
+	min-width: 15%;
+
+}
+
+.polls_input{
+
+	font-size: 20px;
+	text-align: center;
+	padding: 10px;
+	max-height: 20%;
+	max-width: 90%;
+	min-height: 10%;
+	min-width: 30%;
+
+}
+
 .topbar{
 	
 	background-color: dodgerblue;

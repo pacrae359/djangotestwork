@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from .forms import CreateUserForm, CreatePollForm
 
 from .views import loginPage
 from .models import Question, Choice
@@ -140,6 +141,7 @@ class QuestionIndexViewTests(TestCase):
 
 
 class QuestionDetailViewTests(TestCase):
+
 	def test_past_question(self):
 		past_question = create_question(question_text="Past Question.", days=-5)
 		create_choice("Choice.", past_question.id)
@@ -177,6 +179,7 @@ class QuestionDetailViewTests(TestCase):
 
 
 class QuestionResultsViewTests(TestCase):
+
 	def test_past_question(self):
 		past_question = create_question(question_text="Past Question.", days=-5)
 		create_choice("Choice.", past_question.id)
@@ -213,7 +216,8 @@ class QuestionResultsViewTests(TestCase):
 		self.assertContains(response, question.question_text)
 
 class LoginViewTests(TestCase):
-	def test_login_form(self):
+
+	def test_login_form_existing_user(self):
 		"""
 		This tests if the form properly allows logging in for an existing user.
 		"""	
@@ -239,9 +243,10 @@ class LoginViewTests(TestCase):
 		password='testpass'
 		self.client.login(username=username,password=password)
 		response = self.client.get(reverse("polls:login"))
-		self.assertTemplateNotUsed(response, 'polls:login')
+		self.assertTemplateNotUsed(reverse('polls:login'))
 
 class RegisterViewTests(TestCase):
+
 	def test_register_form(self):
 		"""
 		This tests if the register form functions correctly when given valid data
@@ -253,3 +258,128 @@ class RegisterViewTests(TestCase):
 		user_data = {"username": username, "password": password}
 		response = self.client.post(reverse("polls:login"), user_data, follow=True)
 		self.assertTrue(response.context["user"].is_active)
+
+	def test_register_form_no_username(self):
+		"""
+		This test will check whether the registration form will not go through when not provided with a username.
+		"""
+		user_data = {'username': '', 'email': 'email@email.com','password1':'testingpassword123', 'password2': 'testingpassword123'}
+		response = self.client.post(reverse("polls:register"), user_data, follow=True)
+		self.assertTemplateNotUsed(reverse("polls:login"))
+		form = CreateUserForm(user_data)
+		self.assertFalse(form.is_valid())
+
+	def test_register_form_passwords_not_matching(self):
+		"""
+		This test will check whether the registration form will not work if passwords provided do not match. 
+		"""
+		user_data = {'username': 'user', 'email': 'email@email.com','password1':'testingpassword', 'password2': 'testingpassword123'}
+		response = self.client.post(reverse("polls:register"), user_data, follow=True)
+		self.assertTemplateNotUsed(reverse("polls:login"))
+		form = CreateUserForm(user_data)
+		self.assertFalse(form.is_valid())
+
+	def test_register_form_blank_password(self):
+		"""
+		This test will check whether the registration form will not work if there is no password provided.
+		"""
+		user_data = {'username': 'user', 'email': 'email@email.com','password1':'', 'password2': ''}
+		response = self.client.post(reverse("polls:register"), user_data, follow=True)
+		self.assertTemplateNotUsed(reverse("polls:login"))
+		form = CreateUserForm(user_data)
+		self.assertFalse(form.is_valid())
+
+	def test_register_form_no_email(self):
+		"""
+		This test checks if the registration form will allow a blank email field.
+		"""
+		user_data = {'username': 'user', 'email': '','password1':'testingpassword123', 'password2': 'testingpassword123'}
+		response = self.client.post(reverse("polls:register"), user_data, follow=True)
+		self.assertTemplateNotUsed(reverse("polls:login"))
+		form = CreateUserForm(user_data)
+		self.assertFalse(form.is_valid())
+
+class CreatePollViewTests(TestCase):
+
+	def test_not_logged_in_access(self):
+		"""
+		This tests if it's possible to access the create poll page when not logged in (Which it shouldn't be!)
+		"""
+		response = self.client.get(reverse("polls:createpoll"))
+		self.assertTemplateNotUsed("polls:createpoll")
+
+	def test_logged_in_access(self):
+		"""
+		This tests if the user can access the poll creation page when logged in.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		response = self.client.get(reverse("polls:createpoll"))
+		self.assertTemplateUsed(reverse("polls:createpoll"))
+
+	def test_create_question_no_question(self):
+		"""
+		This tests if the create poll page will create a poll that has no poll text.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		poll_data = {'poll_name': '', 'poll_pub_date': timezone.now(), 'poll_answer1':'Answer1', 'poll_answer2':'Answer2', 'poll_answer3':'Answer3'}
+		response = self.client.post(reverse("polls:createpoll"), poll_data, follow=True)
+		form = CreatePollForm(poll_data)
+		self.assertFalse(form.is_valid())
+
+	def test_create_question_no_choices(self):
+		"""
+		This test checks if a poll can be published without having any choices associated with it.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		poll_data = {'poll_name': 'Poll Text', 'poll_pub_date': timezone.now(), 'poll_answer1':'', 'poll_answer2':'', 'poll_answer3':''}
+		response = self.client.post(reverse("polls:createpoll"), poll_data, follow=True)
+		form = CreatePollForm(poll_data)
+		self.assertFalse(form.is_valid())
+
+	def test_create_question_one_choice(self):
+		"""
+		This test checks if a poll can be published with only one choice.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		poll_data = {'poll_name': 'Poll Text', 'poll_pub_date': timezone.now(), 'poll_answer1':'Answer1', 'poll_answer2':'', 'poll_answer3':''}
+		response = self.client.post(reverse("polls:createpoll"), poll_data, follow=True)
+		form = CreatePollForm(poll_data)
+		self.assertFalse(form.is_valid())
+
+	def test_create_question_two_choices(self):
+		"""
+		This test checks if a poll can be published with two choices.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		poll_data = {'poll_name': 'Poll Text', 'poll_pub_date': timezone.now(), 'poll_answer1':'Answer1', 'poll_answer2':'Answer2', 'poll_answer3':''}
+		response = self.client.post(reverse("polls:createpoll"), poll_data, follow=True)
+		form = CreatePollForm(poll_data)
+		self.assertTrue(form.is_valid())
+
+	def test_create_question_three_choices(self):
+		"""
+		This test checks if a poll can be published with all three choices.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		poll_data = {'poll_name': 'Poll Text', 'poll_pub_date': timezone.now(), 'poll_answer1':'Answer1', 'poll_answer2':'Answer2', 'poll_answer3':'Answer3'}
+		response = self.client.post(reverse("polls:createpoll"), poll_data, follow=True)
+		form = CreatePollForm(poll_data)
+		self.assertTrue(form.is_valid())
