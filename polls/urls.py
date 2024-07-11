@@ -11,8 +11,5 @@ urlpatterns = [
     path("login/", views.loginPage, name="login"),
     path("register/", views.registerPage, name="register"),
     path("create_poll/", views.createPollPage, name="createpoll"),
-    path("logout/", views.logout, name="logout")
+    path("logout/", views.logoutf, name="logout")
 ]
-"""
-path("logout/", views.logout.as_view(), name="pollslogout")
-"""

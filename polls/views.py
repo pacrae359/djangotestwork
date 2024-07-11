@@ -79,11 +79,12 @@ def loginPage(request):
 	else:
 		return redirect('polls:index')
 
-def logout(request):
+def logoutf(request):
 	if request.user.is_authenticated:
 		logout(request)
 		return redirect('polls:index')
-
+	else:
+		return redirect('polls:login')
 
 def registerPage(request):
 	if not request.user.is_authenticated:

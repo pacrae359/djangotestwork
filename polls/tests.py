@@ -299,6 +299,29 @@ class RegisterViewTests(TestCase):
 		form = CreateUserForm(user_data)
 		self.assertFalse(form.is_valid())
 
+class LogoutFunctionTests(TestCase):
+	def test_logsout_logged_in_user(self):
+		"""
+		This test checks if the logoutf functions correctly makes it so a user is no longer logged in.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		response = self.client.get(reverse("polls:logout"))
+		self.assertTemplateUsed(reverse("polls:index"))
+
+	def test_inaccessible_by_non_logged_in_users(self):
+		"""
+		This test ensures that a user that isn't logged in cannot access the logout function by sniping the URL.
+		"""
+		user = User.objects.create_user(username='test',password='testpass')
+		username='test'
+		password='testpass'
+		self.client.login(username=username,password=password)
+		response = self.client.get(reverse("polls:logout"))
+		self.assertTemplateUsed(reverse("polls:login"))
+
 class CreatePollViewTests(TestCase):
 
 	def test_not_logged_in_access(self):
